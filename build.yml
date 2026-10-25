@@ -1,0 +1,31 @@
+name: build
+on:
+  workflow_dispatch:
+  push:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        dobby_date: ["2023-03-05", "2023-10-01", "2024-01-20", "2022-09-01"]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Скачать Dobby (версия на дату)
+        run: |
+          git clone https://github.com/jmpews/Dobby.git Dobby
+          cd Dobby
+          git checkout $(git rev-list -n 1 --before="${{ matrix.dobby_date }}" origin/master)
+          git log -1 --format='Dobby %h %cd'
+      - name: Сборка
+        run: |
+          cmake -S . -B build \
+            -DCMAKE_TOOLCHAIN_FILE=$ANDROID_NDK_LATEST_HOME/build/cmake/android.toolchain.cmake \
+            -DANDROID_ABI=armeabi-v7a -DANDROID_PLATFORM=android-21 \
+            -DCMAKE_BUILD_TYPE=Release
+          cmake --build build -j4
+          mkdir -p out && cp build/libmod.so out/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: libmod-${{ matrix.dobby_date }}
+          path: out/libmod.so
