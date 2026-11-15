@@ -14,3 +14,8 @@ else()
 endif()
 set_target_properties(mod PROPERTIES CXX_VISIBILITY_PRESET hidden VISIBILITY_INLINES_HIDDEN ON)
 target_link_options(mod PRIVATE -Wl,--exclude-libs,ALL -Wl,-Bsymbolic -Wl,--gc-sections)
+
+# отдельная библиотека со списком тестеров: libtester.so (подгружается из libmod.so)
+add_library(tester SHARED tester.cpp)
+set_target_properties(tester PROPERTIES CXX_VISIBILITY_PRESET hidden VISIBILITY_INLINES_HIDDEN ON)
+target_link_options(tester PRIVATE -Wl,--gc-sections)
